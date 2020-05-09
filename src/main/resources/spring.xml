@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+    <!--启用@Autowired等注解-->
+    <!--只能激活spring容器中注册的bean,对容器中没注册直接注解的不起作用-->
+    <context:annotation-config/>
+    <!--包含了上面context:annotation-config的所有功能,并且可以主动配置要扫描的类,这样就不需要在spring中注册bean了-->
+    <!--
+    <context:component-scan base-package="com.myCode.entity"/>-->
+
+    <!--总结-->
+    <!--
+        使用<context:annotation-config/>
+            spring配置中必须配置bean,类上不需要加@Component
+        使用<context:component-scan base-package="com.myCode.entity"/>
+            spring中不需要配置bean,直接在类上加@Component就可以用
+            必须扫描到需要的类
+    -->
+
+    <!--测试ioc-->
+    <!--属性注入-->
+    <!--
+    <bean id="user" class="com.myCode.entity.User">
+        <property name="name" value="knight"></property>
+        <property name="age" value="18"></property>
+    </bean>
+    -->
+    <bean id="user" class="com.myCode.entity.User">
+        <constructor-arg index="0" value="kkk"></constructor-arg>
+        <constructor-arg index="1" value="18"></constructor-arg>
+
+        <!--传index或直接指定参数名-->
+        <!--
+        <constructor-arg name="name" value="kkk"></constructor-arg>
+        <constructor-arg name="age" value="18"></constructor-arg>
+        -->
+    </bean>
+
+    <bean id="userService" class="com.myCode.service.impl.UserService"></bean>
+
+    <!--导入jdbc配置文件-->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+    <!--数据库连接池-->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${jdbc.driver}" />
+        <property name="jdbcUrl" value="${jdbc.url}"/>
+        <property name="user" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+
+        <!-- c3p0连接池的私有属性 -->
+        <property name="maxPoolSize" value="30" />
+        <property name="minPoolSize" value="10" />
+        <!-- 关闭连接后不自动commit -->
+        <property name="autoCommitOnClose" value="false" />
+        <!-- 获取连接超时时间 -->
+        <property name="checkoutTimeout" value="10000" />
+        <!-- 当获取连接失败重试次数 -->
+        <property name="acquireRetryAttempts" value="2" />
+    </bean>
+
+    <!--配置sqlSessionFactory对象,类似数据连接池,用来生成sqlSession对象,每次和数据库连接的请求都会产生一个sqlSession-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:mybatis-config.xml" />
+        <!--<property name="typeAliases" value="com.myCode.entity"/>-->
+        <property name="mapperLocations" value="classpath:mapper/*.xml"/>
+    </bean>
+    <!--配置扫描Dao接口包-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--注入sqlSessionFactory对象-->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <!--给出需要扫描的dao包-->
+        <property name="basePackage" value="com.myCode.dao"/>
+    </bean>
+
+    <!--配置事务-->
+    <!--定义事务-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!--配置Annotation驱动,扫描@Transactional注解的类-->
+    <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true"/>
+
+    <!--配置aop-->
+    <!--启用@Aspectj的自动代理支持-->
+    <aop:aspectj-autoproxy/>
+    <bean id="UserService" class="com.myCode.service.impl.UserService"/>
+
+    <bean name="myAspectJ" class="com.myCode.aspect.MyAspect"/>
+</beans>
