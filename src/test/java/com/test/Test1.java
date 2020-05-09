@@ -3,7 +3,7 @@ package com.test;
 import com.myCode.dao.UserDao;
 import com.myCode.entity.User;
 import com.myCode.service.IUserService;
-import com.mysql.jdbc.log.Slf4JLogger;
+//import com.mysql.jdbc.log.Slf4JLogger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -60,8 +60,8 @@ logger.info("info log");
     public void testTransactional()
     {
         List<User> list = new ArrayList<>();
-        list.add(new User("zzzq",1));
-        list.add(new User("zzqzz",2));
+        list.add(new User("zzzq221",1));
+        list.add(new User("zzqzz221",2));
         userService.addUsers(list);
     }
 
